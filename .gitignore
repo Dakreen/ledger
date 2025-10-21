@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+venv/
+.env
+.venv/
+*.log
+
+# Flask instance folder
+instance/
+.flaskenv
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# C compiled files
+*.o
+*.so
+*.out
+*.exe
+*.dll
+*.a
+*.dSYM/
+*.obj
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Backup / temporary
+*.bak
+*.tmp
+*.swp

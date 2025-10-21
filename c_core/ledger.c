@@ -1,0 +1,1 @@
+// C core for hashing and verification
