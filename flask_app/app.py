@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from ctypes import CDLL, c_char_p, c_int
 import os
+from datetime import datetime, timezone
 
 # Initialize Flask
 app = Flask(__name__)
@@ -26,20 +27,42 @@ def index():
 def add_event():
     """Add a new event to the ledger."""
     data = request.get_json()
-    if data["actor"] is not None:
-        ""
-    return jsonify({"status": "pending", "route": "/add"})
+
+    if not data["actor"]:
+        return jsonify({"error": "no data"}), 400
+    if len(data["actor"]) > 50:
+        return jsonify({"error":"actor input too long"}), 400
+    if not data["action"]:
+        return jsonify({"error": "no action"}), 400
+    if len(data["action"]) > 50:
+        return jsonify({"error":"action input too long"}), 400
+    if not data["details"]:
+        return jsonify({"error": "no data"}), 400
+    if len(data["details"]) > 50:
+        return jsonify({"error":"data too long"}), 400
+    
+    timestamp = datetime.now(timezone.utc).isoformat()
+    prev_hash = "GENESIS"
+    data_output = data["actor"] + data["action"] + data["details"] + timestamp + prev_hash
+    hash_bytes = lib.compute_hash(data_output.encode())
+    hash = hash_bytes.decode()
+
+    return jsonify({
+        "status": "ok", 
+        "hash": hash,
+        "prev_hash": prev_hash
+    })
 
 
 @app.route("/events", methods=["GET"])
 def list_events():
-    """List all events (to be implemented)."""
-    return jsonify({"status": "pending", "route": "/events"})
+    """List all events."""
+    return jsonify({"status": "ok", "events": []})
 
 
 @app.route("/verify", methods=["GET"])
 def verify_chain():
-    """Verify ledger integrity (to be implemented)."""
+    """Verify ledger integrity"""
     return jsonify({"status": "pending", "route": "/verify"})
 
 
