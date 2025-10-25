@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from ctypes import CDLL, c_char_p, c_int
-import os
 from datetime import datetime, timezone
+from db import get_db_connection, insert_event, get_all_events, get_last_event
+import os
 
 # Initialize Flask
 app = Flask(__name__)
@@ -43,7 +44,7 @@ def add_event():
     
     timestamp = datetime.now(timezone.utc).isoformat()
     prev_hash = "GENESIS"
-    data_output = data["actor"] + data["action"] + data["details"] + timestamp + prev_hash
+    data_output = timestamp + data["actor"] + data["action"] + data["details"] + prev_hash
     hash_bytes = lib.compute_hash(data_output.encode())
     hash = hash_bytes.decode()
 
