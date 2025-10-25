@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 from ctypes import CDLL, c_char_p, c_int
 from datetime import datetime, timezone
-from db import get_db_connection, insert_event, get_all_events, get_last_event
+from db import insert_event, get_all_events, get_last_event, close_db
 import os
 
 # Initialize Flask
 app = Flask(__name__)
+app.teardown_appcontext(close_db)
 
 # Locate and load the compiled C library
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,10 +44,13 @@ def add_event():
         return jsonify({"error":"data too long"}), 400
     
     timestamp = datetime.now(timezone.utc).isoformat()
-    prev_hash = "GENESIS"
+    prev_hash = get_last_event()
     data_output = timestamp + data["actor"] + data["action"] + data["details"] + prev_hash
+
     hash_bytes = lib.compute_hash(data_output.encode())
     hash = hash_bytes.decode()
+
+    insert_event(timestamp, data["actor"], data["action"], data["details"], prev_hash, hash)
 
     return jsonify({
         "status": "ok", 
@@ -58,7 +62,9 @@ def add_event():
 @app.route("/events", methods=["GET"])
 def list_events():
     """List all events."""
-    return jsonify({"status": "ok", "events": []})
+    data = get_all_events()
+
+    return jsonify({"status": "ok", "events": data})
 
 
 @app.route("/verify", methods=["GET"])
