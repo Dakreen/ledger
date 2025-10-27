@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from ctypes import CDLL, c_char_p, c_int
 from datetime import datetime, timezone
 from db import insert_event, get_all_events, get_last_event, close_db
@@ -22,7 +22,7 @@ lib.verify_hash.restype = c_int
 
 @app.route("/")
 def index():
-    return jsonify({"message": "Ledger API active"})
+    return render_template("index.html")
 
 
 @app.route("/add", methods=["POST"])
