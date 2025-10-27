@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
 from ctypes import CDLL, c_char_p, c_int
 from datetime import datetime, timezone
 from db import insert_event, get_all_events, get_last_event, close_db
@@ -28,34 +28,33 @@ def index():
 @app.route("/add", methods=["POST"])
 def add_event():
     """Add a new event to the ledger."""
-    data = request.get_json()
+    # Get input
+    actor = request.form.get("actor")
+    action = request.form.get("action")
+    details = request.form.get("details")
     # check input
-    if not data["actor"]:
+    if not actor:
         return jsonify({"error": "no data"}), 400
-    if len(data["actor"]) > 50:
+    if len(actor) > 50:
         return jsonify({"error":"actor input too long"}), 400
-    if not data["action"]:
+    if not action:
         return jsonify({"error": "no action"}), 400
-    if len(data["action"]) > 50:
+    if len(action) > 50:
         return jsonify({"error":"action input too long"}), 400
-    if not data["details"]:
+    if not details:
         return jsonify({"error": "no data"}), 400
-    if len(data["details"]) > 50:
+    if len(details) > 50:
         return jsonify({"error":"data too long"}), 400
     # compute hash
     timestamp = datetime.now(timezone.utc).isoformat()
     prev_hash = get_last_event()
-    data_output = timestamp + data["actor"] + data["action"] + data["details"] + prev_hash
+    data_output = timestamp + actor + action + details + prev_hash
     hash_bytes = lib.compute_hash(data_output.encode())
     hash = hash_bytes.decode()
     # insert into database
-    insert_event(timestamp, data["actor"], data["action"], data["details"], prev_hash, hash)
+    insert_event(timestamp, actor, action, details, prev_hash, hash)
 
-    return jsonify({
-        "status": "ok", 
-        "hash": hash,
-        "prev_hash": prev_hash
-    })
+    return redirect("/")
 
 
 @app.route("/events", methods=["GET"])
