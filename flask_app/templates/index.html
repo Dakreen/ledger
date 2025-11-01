@@ -23,14 +23,14 @@
                 </div>
                 <div class="mb-2">
                     <label class="form-label">Action</label>
-                    <input class="form-control" id="action" name="action">
+                    <input class="form-control" id="event_action" name="event_action">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Details</label>
                     <input class="form-control" id="details" name="details">
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-                <div id="add-result" class="mt-3 small text-muted"></div>
+                <button type="submit" class="btn btn-outline-secondary">Submit</button>
+                <div id="add-result" class="alert mt-3 py-2 px-3"></div>
             </form>
         </div>
     </div>
@@ -62,7 +62,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Verify Chain</span>
-            <button id="verify-btn" class="btn btn-outline-danger btn-sm">Run</button>
+            <button id="verify-btn" class="btn btn-outline-secondary btn-sm">Run</button>
         </div>
         <div class="card-body">
             <div id="verify-result" class="fw-bold"></div>

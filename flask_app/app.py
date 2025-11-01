@@ -30,21 +30,21 @@ def add_event():
     """Add a new event to the ledger."""
     # Get input
     actor = request.form.get("actor")
-    action = request.form.get("action")
+    action = request.form.get("event_action")
     details = request.form.get("details")
     # check input
     if not actor:
-        return jsonify({"error": "no data"}), 400
+        return jsonify({"error": "no actor submitted"})
     if len(actor) > 50:
-        return jsonify({"error":"actor input too long"}), 400
+        return jsonify({"error":"actor input too long"})
     if not action:
-        return jsonify({"error": "no action"}), 400
+        return jsonify({"error": "no action submitted"})
     if len(action) > 50:
-        return jsonify({"error":"action input too long"}), 400
+        return jsonify({"error":"action input too long"})
     if not details:
-        return jsonify({"error": "no data"}), 400
+        return jsonify({"error": "no details submitted"})
     if len(details) > 50:
-        return jsonify({"error":"data too long"}), 400
+        return jsonify({"error":"details too long"})
     # compute hash
     timestamp = datetime.now(timezone.utc).isoformat()
     prev_hash = get_last_event()
