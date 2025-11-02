@@ -28,29 +28,25 @@ def index():
 @app.route("/add", methods=["POST"])
 def add_event():
     """Add a new event to the ledger."""
+
     # Get input
-    actor = request.form.get("actor")
-    action = request.form.get("event_action")
-    details = request.form.get("details")
+    actor = request.form.get("actor").strip()
+    action = request.form.get("event_action").strip()
+    details = request.form.get("details").strip()
+
     # check input
-    if not actor:
-        return jsonify({"error": "no actor submitted"})
-    if len(actor) > 50:
-        return jsonify({"error":"actor input too long"})
-    if not action:
-        return jsonify({"error": "no action submitted"})
-    if len(action) > 50:
-        return jsonify({"error":"action input too long"})
-    if not details:
-        return jsonify({"error": "no details submitted"})
-    if len(details) > 50:
-        return jsonify({"error":"details too long"})
+    if not actor or not action or not details:
+        return jsonify({"error": "All inputs must be filled"})
+    if len(actor) > 50 or len(action) > 50 or len(details) > 50:
+        return jsonify({"error": "All inputs must have appropriate length"})
+    
     # compute hash
     timestamp = datetime.now(timezone.utc).isoformat()
     prev_hash = get_last_event()
     data_output = timestamp + actor + action + details + prev_hash
     hash_bytes = lib.compute_hash(data_output.encode())
     hash = hash_bytes.decode()
+    
     # insert into database
     insert_event(timestamp, actor, action, details, prev_hash, hash)
 

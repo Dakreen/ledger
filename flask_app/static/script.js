@@ -1,4 +1,28 @@
-document.getElementById("add-form").addEventListener("submit", async function(e){
+function display_add_result(is_json, text)
+{
+    let element = document.getElementById("add-result");
+    if (is_json)
+    {
+        element.classList.add("alert-danger");
+        element.innerText = text;
+    }
+    else
+    {
+        element.classList.add("alert-success");
+        element.innerText = text;
+    }
+}
+
+function clear_input_form(form)
+{
+    form.elements["actor"].value = "";
+    form.elements["event_action"].value = "";
+    form.elements["details"].value = "";
+}
+
+var add_form = document.getElementById("add-form");
+
+add_form.addEventListener("submit", async function(e){
     // stop form submission
     e.preventDefault()
 
@@ -6,11 +30,20 @@ document.getElementById("add-form").addEventListener("submit", async function(e)
     const form = e.target;
     const data_in = new FormData(form);
 
-    // Send manually to Flask
+    // Send manually to Flask and get the response
     const response = await fetch(form.action, {method: "POST", body: data_in});
-    const data_out = await response.json();
-    console.log(data_out.error);
 
-    // Display result of form post
-    document.getElementById("add-result").innerText = data_out.error;
+    // Check if response content is JSON
+    let content_type = response.headers.get("content-type");
+    if(content_type && content_type.includes("application/json"))
+    {
+        console.log(response);
+        const data_out = await response.json();
+        display_add_result(true, data_out.error);
+    }
+    else
+    {   
+        display_add_result(false, "Event successfully added");
+    }
+    clear_input_form(add_form);
 })
