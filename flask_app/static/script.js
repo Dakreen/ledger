@@ -3,11 +3,19 @@ function display_add_result(is_json, text)
     let element = document.getElementById("add-result");
     if (is_json)
     {
+        if(element.classList.contains("alert-success"))
+        {
+            element.classList.remove("alert-success");
+        }
         element.classList.add("alert-danger");
         element.innerText = text;
     }
     else
     {
+        if(element.classList.contains("alert-danger"))
+        {
+            element.classList.remove("alert-danger");
+        }
         element.classList.add("alert-success");
         element.innerText = text;
     }

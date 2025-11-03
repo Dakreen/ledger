@@ -39,7 +39,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Event List</span>
-            <button id="load-events" class="btn btn-outline-secondary btn-sm">Refresh</button>
+            <a href="/events" id="load-events" class="btn btn-outline-secondary btn-sm">Refresh</a>
         </div>
         <div class="card-body">
             <table class="table table-sm table-striped">
@@ -52,7 +52,16 @@
                     </tr>
                 </thead>
                 <tbody id="events-body">
-                    <!-- Filled later -->
+                    {% if data is defined %}
+                        {% for index in data %}
+                            <tr>
+                                <td>{{index.id}}</td>
+                                <td>{{index.actor}}</td>
+                                <td>{{index.action}}</td>
+                                <td>{{index.hash}}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
