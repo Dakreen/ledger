@@ -28,9 +28,12 @@ function clear_input_form(form)
     form.elements["details"].value = "";
 }
 
-var add_form = document.getElementById("add-form");
+let add_form = document.getElementById("add-form");
+let load_events = document.getElementById("load-events");
+let verify_btn = document.getElementById("verify-btn");
 
-add_form.addEventListener("submit", async function(e){
+add_form.addEventListener("submit", async function(e)
+{
     // stop form submission
     e.preventDefault()
 
@@ -54,4 +57,49 @@ add_form.addEventListener("submit", async function(e){
         display_add_result(false, "Event successfully added");
     }
     clear_input_form(add_form);
+})
+
+load_events.addEventListener("click", async function()
+{
+    // Clear the event list
+    let events_body = document.getElementById("events-body");
+    events_body.innerHTML = "";
+
+    // Get data from Flask /events
+    const res = await fetch("/events");
+    const data = await res.json();
+
+    // Create elements to display data
+    for(item of data)
+    {
+        tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.actor}</td>
+            <td>${item.action}</td>
+            <td>${item.hash}</td>
+        `;
+        events_body.appendChild(tr);
+    }
+})
+
+verify_btn.addEventListener("click", async function()
+{
+    let verify_result = document.getElementById("verify-result");
+    verify_result.textContent = "";
+    const res = await fetch("/verify");
+    const data = await res.json();
+    if(data.verified)
+    {
+        if(verify_result.classList.contains("alert-danger"))
+        {
+            verify_result.classList.remove("alert-danger");
+        }
+        verify_result.classList.add("alert-success");
+        verify_result.textContent = "Ledger verified — no tampering.";
+    }
+    else
+    {
+        verify_result.textContent = "Tampering detected at record ID";
+    }
 })

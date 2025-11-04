@@ -39,7 +39,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Event List</span>
-            <a href="/events" id="load-events" class="btn btn-outline-secondary btn-sm">Refresh</a>
+            <button id="load-events" class="btn btn-outline-secondary btn-sm">Refresh</button>
         </div>
         <div class="card-body">
             <table class="table table-sm table-striped">
@@ -51,18 +51,7 @@
                         <th>Hash</th>
                     </tr>
                 </thead>
-                <tbody id="events-body">
-                    {% if data is defined %}
-                        {% for index in data %}
-                            <tr>
-                                <td>{{index.id}}</td>
-                                <td>{{index.actor}}</td>
-                                <td>{{index.action}}</td>
-                                <td>{{index.hash}}</td>
-                            </tr>
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
+                <tbody id="events-body"></tbody>
             </table>
         </div>
     </div>
@@ -74,7 +63,7 @@
             <button id="verify-btn" class="btn btn-outline-secondary btn-sm">Run</button>
         </div>
         <div class="card-body">
-            <div id="verify-result" class="fw-bold"></div>
+            <div id="verify-result" class="fw-bold text-center alert"></div>
         </div>
     </div>
 

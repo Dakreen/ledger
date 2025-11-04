@@ -58,7 +58,7 @@ def list_events():
     """List all events."""
     data = get_all_events()
 
-    return render_template("index.html", data=data)
+    return jsonify(data)
 
 
 @app.route("/verify", methods=["GET"])
