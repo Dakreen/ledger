@@ -13,9 +13,15 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 lib_path = os.path.join(base_dir, "../c_core/ledger.so")
 lib = CDLL(lib_path)
 
+# Configure argument types from C
+lib.compute_hash.argtypes = [c_char_p]
+lib.verify_hash.argtypes = [c_char_p, c_char_p]
+lib.free_buffer.argtypes = [c_char_p]
+
 # Configure return types from C
 lib.compute_hash.restype = c_char_p
 lib.verify_hash.restype = c_int
+lib.free_buffer.restype = None
 
 
 # --- ROUTES --------------------------------------------------
@@ -46,6 +52,7 @@ def add_event():
     data_output = timestamp + actor + action + details + prev_hash
     hash_bytes = lib.compute_hash(data_output.encode())
     hash = hash_bytes.decode()
+    lib.free_buffer(hash_bytes)
     
     # insert into database
     insert_event(timestamp, actor, action, details, prev_hash, hash)
