@@ -80,9 +80,9 @@ def verify_chain():
             tampered.append(data[i]["id"])
 
     if not tampered:
-        return jsonify({"status": "ok", "verified": True, "tampered_records": []})    
+        return jsonify({"verified": True, "tampered_records": []})    
     else:
-        return jsonify({"status": "ok", "verified": False, "tampered_records": tampered})
+        return jsonify({"verified": False, "tampered_records": tampered})
 
 
 # --- MAIN ENTRY ----------------------------------------------
