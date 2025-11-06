@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, redirect
-from ctypes import CDLL, c_char_p, c_int
+from ctypes import CDLL, c_char_p, c_int, c_void_p
 from datetime import datetime, timezone
 from db import insert_event, get_all_events, get_last_event, close_db
 import os
@@ -15,11 +15,11 @@ lib = CDLL(lib_path)
 
 # Configure argument types from C
 lib.compute_hash.argtypes = [c_char_p]
-lib.verify_hash.argtypes = [c_char_p, c_char_p]
-lib.free_buffer.argtypes = [c_char_p]
+lib.verify_hash.argtypes = [c_void_p, c_char_p]
+lib.free_buffer.argtypes = [c_void_p]
 
 # Configure return types from C
-lib.compute_hash.restype = c_char_p
+lib.compute_hash.restype = c_void_p
 lib.verify_hash.restype = c_int
 lib.free_buffer.restype = None
 
@@ -78,13 +78,14 @@ def verify_chain():
         # recompute integrity
         output = data[i]["timestamp"] + data[i]["actor"] + data[i]["action"] + data[i]["details"] + data[i]["prev_hash"]
         hash_bytes = lib.compute_hash(output.encode())
-        hash = hash_bytes.decode()
-        if hash != data[i]["hash"]:
+        if lib.verify_hash(hash_bytes, data[i]["hash"].encode()):
             tampered.append(data[i]["id"])
 
         # check chain integrity
-        if i > 0 and data[i]["prev_hash"] != data[i - 1]["hash"]:
+        if i > 0 and lib.verify_hash(hash_bytes, data[i - 1]["hash"].encode()):
             tampered.append(data[i]["id"])
+
+        lib.free_buffer(hash_bytes)
 
     if not tampered:
         return jsonify({"verified": True, "tampered_records": []})    
