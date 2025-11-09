@@ -1,21 +1,23 @@
 from flask import Flask, request, jsonify, render_template, redirect
-from ctypes import CDLL, c_char_p, c_int, c_void_p
+from ctypes import CDLL, c_char_p, c_int, c_void_p, string_at
 from datetime import datetime, timezone
-from db import insert_event, get_all_events, get_last_event, close_db
-import os
+import os, sys
+
+# Locate and load the compiled C library
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+LIB_PATH = os.path.join(BASE_DIR, "c_core", "ledger.so")
+sys.path.append(BASE_DIR)
+lib = CDLL(LIB_PATH)
+from flask_app.db import insert_event, get_all_events, get_last_event, close_db
 
 # Initialize Flask
 app = Flask(__name__)
 app.teardown_appcontext(close_db)
 
-# Locate and load the compiled C library
-base_dir = os.path.dirname(os.path.abspath(__file__))
-lib_path = os.path.join(base_dir, "../c_core/ledger.so")
-lib = CDLL(lib_path)
 
 # Configure argument types from C
 lib.compute_hash.argtypes = [c_char_p]
-lib.verify_hash.argtypes = [c_void_p, c_char_p]
+lib.verify_hash.argtypes = [c_char_p, c_char_p]
 lib.free_buffer.argtypes = [c_void_p]
 
 # Configure return types from C
@@ -51,7 +53,7 @@ def add_event():
     prev_hash = get_last_event()
     data_output = timestamp + actor + action + details + prev_hash
     hash_bytes = lib.compute_hash(data_output.encode())
-    hash = hash_bytes.decode()
+    hash = string_at(hash_bytes).decode() # because of c_void_p return pointer and must use string_at before decode() to read content
     lib.free_buffer(hash_bytes)
     
     # insert into database
@@ -77,15 +79,13 @@ def verify_chain():
     for i in range(0, len(data)):
         # recompute integrity
         output = data[i]["timestamp"] + data[i]["actor"] + data[i]["action"] + data[i]["details"] + data[i]["prev_hash"]
-        hash_bytes = lib.compute_hash(output.encode())
-        if lib.verify_hash(hash_bytes, data[i]["hash"].encode()):
+        prev_output = data[i - 1]["timestamp"] + data[i - 1]["actor"] + data[i - 1]["action"] + data[i - 1]["details"] + data[i - 1]["prev_hash"]
+        if lib.verify_hash(output.encode(), data[i]["hash"].encode()) == 0:
             tampered.append(data[i]["id"])
 
         # check chain integrity
-        if i > 0 and lib.verify_hash(hash_bytes, data[i - 1]["hash"].encode()):
+        if i > 0 and lib.verify_hash(prev_output.encode(), data[i]["prev_hash"].encode()) == 0:
             tampered.append(data[i]["id"])
-
-        lib.free_buffer(hash_bytes)
 
     if not tampered:
         return jsonify({"verified": True, "tampered_records": []})    

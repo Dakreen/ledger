@@ -100,6 +100,11 @@ verify_btn.addEventListener("click", async function()
     }
     else
     {
-        verify_result.textContent = `Tampering detected at record ID ${data.tampered_record}`;
+        if(verify_result.classList.contains("alert-success"))
+        {
+            verify_result.classList.remove("alert-success");
+        }
+        verify_result.classList.add("alert-danger");
+        verify_result.textContent = `Tampering detected at record ID ${data.tampered_records}`;
     }
 })
