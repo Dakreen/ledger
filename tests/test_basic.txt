@@ -1,1 +1,5 @@
-# Placeholder for unit and integration test
+---------------------
+Chain integrity test|
+---------------------
+1/ modify events table actor column in the last row with sqlite cli:
+-> tampering detected, indicating the id corresponding to the last row

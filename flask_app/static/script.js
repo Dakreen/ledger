@@ -91,12 +91,24 @@ verify_btn.addEventListener("click", async function()
     const data = await res.json();
     if(data.verified)
     {
-        if(verify_result.classList.contains("alert-danger"))
+        if(data.missing_records == 0)
         {
-            verify_result.classList.remove("alert-danger");
+            if(verify_result.classList.contains("alert-danger"))
+            {
+                verify_result.classList.remove("alert-danger");
+            }
+            verify_result.classList.add("alert-success");
+            verify_result.textContent = "Ledger verified — no tampering.";
         }
-        verify_result.classList.add("alert-success");
-        verify_result.textContent = "Ledger verified — no tampering.";
+        else
+        {
+            if(verify_result.classList.contains("alert-success"))
+            {
+                verify_result.classList.remove("alert-success");
+            }
+            verify_result.classList.add("alert-danger");
+            verify_result.textContent = `Missing records detected: ${data.missing_records}`;
+        }
     }
     else
     {
@@ -105,6 +117,6 @@ verify_btn.addEventListener("click", async function()
             verify_result.classList.remove("alert-success");
         }
         verify_result.classList.add("alert-danger");
-        verify_result.textContent = `Tampering detected at record ID ${data.tampered_records}`;
+        verify_result.textContent = `Tampering detected at record ID ${data.tampered_records} - Missing records detected: ${data.missing_records}`;
     }
 })

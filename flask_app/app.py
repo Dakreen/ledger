@@ -8,12 +8,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 LIB_PATH = os.path.join(BASE_DIR, "c_core", "ledger.so")
 sys.path.append(BASE_DIR)
 lib = CDLL(LIB_PATH)
-from flask_app.db import insert_event, get_all_events, get_last_event, close_db
+from flask_app.db import insert_event, get_all_events, get_last_event, count_events, update_meta, get_total_events
 
 # Initialize Flask
 app = Flask(__name__)
-app.teardown_appcontext(close_db)
-
 
 # Configure argument types from C
 lib.compute_hash.argtypes = [c_char_p]
@@ -57,7 +55,9 @@ def add_event():
     lib.free_buffer(hash_bytes)
     
     # insert into database
+    count = count_events()
     insert_event(timestamp, actor, action, details, prev_hash, hash)
+    update_meta(count + 1, hash)  
 
     return redirect("/")
 
@@ -87,10 +87,15 @@ def verify_chain():
         if i > 0 and lib.verify_hash(prev_output.encode(), data[i]["prev_hash"].encode()) == 0:
             tampered.append(data[i]["id"])
 
+    # check for missing events
+    total_events = get_total_events()
+    count = count_events()
+    missing_records = total_events - count
+
     if not tampered:
-        return jsonify({"verified": True, "tampered_records": []})    
+        return jsonify({"verified": True, "tampered_records": tampered, "missing_records": missing_records})
     else:
-        return jsonify({"verified": False, "tampered_records": tampered})
+        return jsonify({"verified": False, "tampered_records": tampered, "missing_records": missing_records})
 
 
 # --- MAIN ENTRY ----------------------------------------------

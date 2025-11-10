@@ -7,4 +7,10 @@ CREATE TABLE events (
     details TEXT,
     prev_hash TEXT,
     hash TEXT
-)
+);
+
+CREATE TABLE ledger_meta (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    total_events INTEGER,
+    last_hash TEXT
+);
