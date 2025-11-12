@@ -50,3 +50,10 @@ void free_buffer(char* buffer)
 {
     free(buffer);
 }
+
+// For unit test only
+/* int main()
+{
+
+    return 0;
+} */
