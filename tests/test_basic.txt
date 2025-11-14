@@ -2,185 +2,126 @@
 1. C Core Tests (Unit Tests) |
 ------------------------------
 
-Test 1 — Hash consistency
+Test — Hash consistency
 -------------------------
 
 * Input: "Jerome"
 * Run compute_hash("Jerome") multiple times.
 -> Same hash created
 
-Test 2 — Different inputs produce different hashes
+Test — Different inputs produce different hashes
 --------------------------------------------------
 
 * "admin" vs "system"
 -> Different hash created
 
-Test 3 — verify_hash correct match
+Test — verify_hash correct match
 ----------------------------------
 
 * Call verify_hash("Hello", compute_hash("Hello"))
 -> returns 1
 
-Test 4 — verify_hash mismatch
+Test — verify_hash mismatch
 -----------------------------
 
-* Call `verify_hash("Hello", compute_hash("World"))`
+* Call verify_hash("Hello", compute_hash("World"))
 -> returns 0
 
+-------------------
+2. Database Tests |
+-------------------
 
-# **2. Database Tests**
-
-### **Test 5 — Inserting an event**
+Test — Inserting an event
+---------------------------
 
 * Call `/add` once.
-* Query DB:
+-> 1 row created
+-> prev_hash = "GENESIS"
 
-  ```
-  SELECT * FROM events;
-  ```
-* Expected:
-
-  * Exactly 1 row
-  * `prev_hash = "GENESIS"`
-
-### **Test 6 — Chain grows**
+Test — Chain grows
+--------------------
 
 * Call `/add` 3 times.
-* Expected:
+-> 3 rows created
+-> prev_hash of row 2 = hash of row 1
+-> prev_hash of row 3 = hash of row 2
 
-  * 3 rows
-  * `prev_hash` of row 2 equals `hash` of row 1
-  * `prev_hash` of row 3 equals `hash` of row 2
+---------------------------
+3. Tamper Detection Tests |
+---------------------------
 
----
+Test — Modify one field
+--------------------------
 
-# **3. Flask API Tests**
-
-### **Test 7 — /add**
-
-* Send:
-
-  ```
-  actor=test, action=login, details=ok
-  ```
-* Expected:
-
-  * JSON with `status="ok"`
-  * `hash` = valid 64-character hex string
-  * `prev_hash` matches last row
-
-### **Test 8 — /events**
-
-* Expected:
-  JSON array with all stored events in correct order.
-
-### **Test 9 — /verify (no tampering)**
-
-* Expected:
-
-  ```
-  verified: true
-  tampered_records: []
-  ```
-
----
-
-# **4. Tamper Detection Tests**
-
-### **Test 10 — Modify one field**
-
-* In SQLite:
-
-  ```
-  UPDATE events SET details='CORRUPTED' WHERE id=2;
-  ```
+In SQLite: UPDATE events SET details='CORRUPTED' WHERE id=2;
 * Call `/verify`.
-* Expected:
+-> Tampering detected at record ID 2,3 - Missing records detected: 0
 
-  * `verified = false`
-  * `tampered_records = [2, 3, 4...]` (propagation)
+Test — Modify a hash field
+--------------------------
 
-### **Test 11 — Modify a hash field**
+* Change: UPDATE events SET hash='0000...' WHERE id=2;
+-> Tampering detected at record ID 2 - Missing records detected: 0 -> tampering detected but not correct, ID 3 have to be flagged as well
 
-* Change:
+Test — Modify prev_hash
+-----------------------
 
-  ```
-  UPDATE events SET hash='0000...' WHERE id=3;
-  ```
-* Expected:
+* Change prev_hash of record 2 to '0000...' WHERE id=2.
+-> Tampering detected at record ID 2,2,3 - Missing records detected: 0 -> tampering detected but not correct, display twice the same ID
 
-  * `verified = false`
-  * ID 3 and all following flagged
-
-### **Test 12 — Modify prev_hash**
-
-* Change prev_hash of record 2 to something invalid.
-* Expected:
-
-  * ID 2 flagged
-  * ID 3,4... flagged (chain broken)
-
-### **Test 13 — Delete a record in the middle**
+Test — Delete a record in the middle
+------------------------------------
 
 * Delete row 2.
-* Expected:
+-> Tampering detected at record ID 3 - Missing records detected: 1
 
-  * Chain verification fails
-  * `verified = false`
-  * IDs 3,4,... flagged
-
-### **Test 14 — Delete last record**
+Test — Delete last record
+-------------------------
 
 * Delete last row.
-* Expected:
+-> Missing records detected: 1
 
-  * Chain still marked OK
-  * This tests the blind spot of simple hash chains
-  * If `ledger_meta` is implemented, deletion will be detected
+-----------------------
+4. Dashboard UI Tests |
+-----------------------
 
----
+Test - Sending empty inputs
+--------------------------
 
-# **5. ledger_meta Tests (optional)**
+* Send at last one empty inputs
+-> error message : All inputs must be filled
 
-### **Test 15 — Incorrect total_events**
+Test - Length of inputs
+-----------------------
 
-* Decrease `ledger_meta.total_events` manually.
-* Expected:
+* Send at last one input with more than 50 characters Length
+-> error message : All inputs must have appropriate length
 
-  * `/verify` detects mismatch if implemented.
+Test - Alert when submitting the form
+-------------------------------------
 
-### **Test 16 — Incorrect last_hash**
+* Send correct inputs form and click on submit
+-> display green alert success message
 
-* Change last_hash in `ledger_meta`.
-* Expected:
+* Send invalid inputs form and click on submit
+-> display red alert danger message
 
-  * `/verify` signals tail tampering.
+Test - Event list
+-----------------
 
----
+* Click on Refresh to display all events in the table
+-> OK
 
-# **6. Dashboard UI Tests**
+Test - Verify chain
+-------------------
 
-### **Test 17 — Fill form and add event**
+* Click on Run to display the result
+-> display green alert success message if not tampered_records
+-> display red alert danger message if tampered
 
-* Expected: confirmation box displays hash.
+Test - Responsive
+-----------------
 
-### **Test 18 — Refresh events**
-
-* Event list updates immediately.
-
-### **Test 19 — Verify chain**
-
-* Shows green success or red error with IDs.
-
-### **Test 20 — Special characters in form**
-
-* Test entering:
-
-  ```
-  <script>
-  ```
-
-  Should be rejected (future improvement—optional for Phase 1).
-
----
+* mobile Responsive
+-> OK
 
