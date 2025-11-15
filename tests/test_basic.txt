@@ -50,36 +50,42 @@ Test — Chain grows
 3. Tamper Detection Tests |
 ---------------------------
 
-Test — Modify one field
---------------------------
+Test — Modify one field in events table
+---------------------------------------
 
-In SQLite: UPDATE events SET details='CORRUPTED' WHERE id=2;
+* Change details of record 2 to 'CORRUPTED'
 * Call `/verify`.
 -> Tampering detected at record ID 2,3 - Missing records detected: 0
 
-Test — Modify a hash field
---------------------------
+Test — Modify a hash field in events table
+------------------------------------------
 
-* Change: UPDATE events SET hash='0000...' WHERE id=2;
--> Tampering detected at record ID 2 - Missing records detected: 0 -> tampering detected but not correct, ID 3 have to be flagged as well
+* Change hash of record 2 to '0000...'
+-> Tampering detected at record ID 2 - Missing records detected: 0
 
-Test — Modify prev_hash
------------------------
+Test — Modify prev_hash in events table
+---------------------------------------
 
-* Change prev_hash of record 2 to '0000...' WHERE id=2.
--> Tampering detected at record ID 2,2,3 - Missing records detected: 0 -> tampering detected but not correct, display twice the same ID
+* Change prev_hash of record 2 to '0000...'
+-> Tampering detected at record ID 2, 3 - Missing records detected: 0
 
-Test — Delete a record in the middle
+Test — Delete a record in the middle in events table
 ------------------------------------
 
 * Delete row 2.
 -> Tampering detected at record ID 3 - Missing records detected: 1
 
-Test — Delete last record
--------------------------
+Test — Delete last record in events table
+-----------------------------------------
 
 * Delete last row.
 -> Missing records detected: 1
+
+Test - Modify total_events in ledger_meta
+-----------------------------------------
+
+* Change total_events to 2
+-> Missing records detected: -1
 
 -----------------------
 4. Dashboard UI Tests |

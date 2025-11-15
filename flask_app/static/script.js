@@ -1,3 +1,4 @@
+// Handle success or error message
 function display_add_result(is_json, text)
 {
     let element = document.getElementById("add-result");
@@ -21,6 +22,7 @@ function display_add_result(is_json, text)
     }
 }
 
+// Clear all inputs in form 
 function clear_input_form(form)
 {
     form.elements["actor"].value = "";
@@ -32,6 +34,7 @@ let add_form = document.getElementById("add-form");
 let load_events = document.getElementById("load-events");
 let verify_btn = document.getElementById("verify-btn");
 
+// Event handler for form submission
 add_form.addEventListener("submit", async function(e)
 {
     // stop form submission
@@ -44,7 +47,7 @@ add_form.addEventListener("submit", async function(e)
     // Send manually to Flask and get the response
     const response = await fetch(form.action, {method: "POST", body: data_in});
 
-    // Check if response content is JSON
+    // Check if response content is JSON (error) or not and insert the message
     let content_type = response.headers.get("content-type");
     if(content_type && content_type.includes("application/json"))
     {
@@ -59,6 +62,7 @@ add_form.addEventListener("submit", async function(e)
     clear_input_form(add_form);
 })
 
+// Event handler for event list
 load_events.addEventListener("click", async function()
 {
     // Clear the event list
@@ -83,12 +87,19 @@ load_events.addEventListener("click", async function()
     }
 })
 
+// Event handler for chain verification
 verify_btn.addEventListener("click", async function()
 {
     let verify_result = document.getElementById("verify-result");
     verify_result.textContent = "";
+
+    // Get data from Flask /verify
     const res = await fetch("/verify");
     const data = await res.json();
+
+    // Check if tampered records and missing records
+
+    // Records verify and missing records check
     if(data.verified)
     {
         if(data.missing_records == 0)
@@ -110,6 +121,7 @@ verify_btn.addEventListener("click", async function()
             verify_result.textContent = `Missing records detected: ${data.missing_records}`;
         }
     }
+    // Records tampered
     else
     {
         if(verify_result.classList.contains("alert-success"))
