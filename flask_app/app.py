@@ -89,9 +89,7 @@ def verify_chain():
         # check chain integrity
         if i > 0:
             prev_output = data[i-1]["timestamp"] + data[i-1]["actor"] + data[i-1]["action"] + data[i-1]["details"] + data[i-1]["prev_hash"]
-            prev_hash_byte = lib.compute_hash(prev_output.encode())
-            prev_hash = string_at(prev_hash_byte).decode()
-            if prev_hash != data[i]["prev_hash"]:
+            if lib.verify_hash(prev_output.encode(), data[i]["prev_hash"].encode()) == 0:
                 if data[i]["id"] not in tampered:
                     tampered.append(data[i]["id"])
 
