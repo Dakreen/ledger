@@ -7,10 +7,10 @@ Each event references the hash of the previous one, ensuring immutability, integ
 
 ## **Tech Stack**
 
-* **C** — Core hashing and verification logic
-* **Flask** — API layer and backend logic
-* **SQLite** — Local, lightweight storage
-* **JavaScript / Bootstrap** — Interactive dashboard UI
+* **C** - Core hashing and verification logic
+* **Flask** - API layer and backend logic
+* **SQLite** - Local, lightweight storage
+* **JavaScript / Bootstrap** - Interactive dashboard UI
 
 ## **Core Features**
 
